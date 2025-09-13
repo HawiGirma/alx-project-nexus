@@ -1,31 +1,17 @@
 import React from "react";
-import { useProducts } from "./hooks/useProducts";
-import { Product } from "./types";
+import { useAppSelector, useAppDispatch } from "./hooks/redux";
+import { setShowFilters } from "./store/slices/uiSlice";
+import SearchBar from "./components/common/SearchBar";
+import SortDropdown from "./components/common/SortDropdown";
+import FilterPanel from "./components/common/FilterPanel";
+import FilterToggle from "./components/common/FilterToggle";
+import ViewToggle from "./components/common/ViewToggle";
+import ResultsSummary from "./components/common/ResultsSummary";
+import ProductGrid from "./components/product/ProductGrid";
 
 function App() {
-  const { products, loading, error } = useProducts();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">⚠️</div>
-          <p className="text-red-600">Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
+  const dispatch = useAppDispatch();
+  const showFilters = useAppSelector((state) => state.ui.showFilters);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,52 +21,58 @@ function App() {
             <h1 className="text-3xl font-bold text-gray-900">
               E-Commerce Catalog
             </h1>
-            <div className="text-sm text-gray-500">
-              {products.length} products found
+            <div className="flex items-center space-x-4">
+              <SearchBar />
+              <ViewToggle />
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product: Product) => (
-            <div
-              key={product.id}
-              className="card hover:shadow-md transition-shadow"
-            >
-              <div className="aspect-w-16 aspect-h-12 bg-gray-200">
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className="w-full h-48 object-cover"
-                />
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters Sidebar */}
+          <div
+            className={`lg:w-80 ${showFilters ? "block" : "hidden lg:block"}`}
+          >
+            <div className="lg:sticky lg:top-8">
+              <div className="flex items-center justify-between mb-4 lg:hidden">
+                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                <button
+                  onClick={() => dispatch(setShowFilters(false))}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
-                  {product.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                  {product.description}
-                </p>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl font-bold text-primary-600">
-                    ${product.price}
-                  </span>
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-sm text-gray-600">
-                      {product.rating}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{product.brand}</span>
-                  <span>{product.stock} in stock</span>
-                </div>
-              </div>
+              <FilterPanel />
             </div>
-          ))}
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-4">
+                <FilterToggle />
+                <SortDropdown />
+              </div>
+              <ResultsSummary />
+            </div>
+
+            <ProductGrid />
+          </div>
         </div>
       </main>
     </div>
