@@ -217,6 +217,9 @@ export const prisma = {
         username: "emmawilson",
         avatar: "/woman-developer.png",
         bio: "Full-stack developer passionate about React and Node.js",
+        followers: 1250,
+        following: 340,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
         _count: { authoredPosts: 45 },
       },
       {
@@ -225,7 +228,21 @@ export const prisma = {
         username: "davidkim",
         avatar: "/man-runner.png",
         bio: "UI/UX Designer & fitness enthusiast",
+        followers: 890,
+        following: 210,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25), // 25 days ago
         _count: { authoredPosts: 32 },
+      },
+      {
+        id: "user-3",
+        name: "Sofia Rodriguez",
+        username: "sofiarodriguez",
+        avatar: "/woman-designer.png",
+        bio: "Creative designer and art director",
+        followers: 2100,
+        following: 180,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20), // 20 days ago
+        _count: { authoredPosts: 67 },
       },
     ],
     findUnique: async (args?: any) => {
@@ -236,6 +253,9 @@ export const prisma = {
           username: "emmawilson",
           avatar: "/woman-developer.png",
           bio: "Full-stack developer passionate about React and Node.js",
+          followers: 1250,
+          following: 340,
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
           _count: { authoredPosts: 45 },
         },
         {
@@ -244,7 +264,21 @@ export const prisma = {
           username: "davidkim",
           avatar: "/man-runner.png",
           bio: "UI/UX Designer & fitness enthusiast",
+          followers: 890,
+          following: 210,
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25), // 25 days ago
           _count: { authoredPosts: 32 },
+        },
+        {
+          id: "user-3",
+          name: "Sofia Rodriguez",
+          username: "sofiarodriguez",
+          avatar: "/woman-designer.png",
+          bio: "Creative designer and art director",
+          followers: 2100,
+          following: 180,
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20), // 20 days ago
+          _count: { authoredPosts: 67 },
         },
       ];
       return (
