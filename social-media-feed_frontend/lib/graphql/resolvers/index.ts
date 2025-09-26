@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/database";
 import { PubSub } from "graphql-subscriptions";
+import { mockResolvers } from "./mock-resolvers";
 
 // Define types locally instead of importing from Prisma
 type MediaType = "IMAGE" | "VIDEO" | "GIF";
@@ -98,7 +99,7 @@ function getCurrentUserId(): string {
   return "current-user";
 }
 
-export const resolvers = {
+export const databaseResolvers = {
   Query: {
     posts: async (
       _: any,
@@ -398,13 +399,17 @@ export const resolvers = {
 
       if (!user) {
         // Create a default user if none exists
-        const newUser = await prisma.user.create({
-          data: {
+        const newUser = await prisma.user.upsert({
+          where: { id: currentUserId },
+          update: {},
+          create: {
             id: currentUserId,
             name: "You",
-            username: "you",
+            username: `you_${Date.now()}`, // Make username unique
             avatar: "/diverse-user-avatars.png",
             bio: "Social media enthusiast",
+            followers: 0,
+            following: 0,
           },
           include: {
             _count: {
@@ -752,13 +757,17 @@ export const resolvers = {
 
       if (!user) {
         // Create the current user if they don't exist
-        user = await prisma.user.create({
-          data: {
+        user = await prisma.user.upsert({
+          where: { id: currentUserId },
+          update: {},
+          create: {
             id: currentUserId,
             name: "Current User",
-            username: "currentuser",
+            username: `currentuser_${Date.now()}`, // Make username unique
             avatar: "/diverse-user-avatars.png",
             bio: "Social media enthusiast",
+            followers: 0,
+            following: 0,
           },
         });
       }
@@ -848,6 +857,28 @@ export const resolvers = {
       { postId, content }: { postId: string; content: string }
     ) => {
       const currentUserId = getCurrentUserId();
+
+      // Ensure the current user exists in the database
+      let user = await prisma.user.findUnique({
+        where: { id: currentUserId },
+      });
+
+      if (!user) {
+        // Create the current user if they don't exist
+        user = await prisma.user.upsert({
+          where: { id: currentUserId },
+          update: {},
+          create: {
+            id: currentUserId,
+            name: "Current User",
+            username: `currentuser_${Date.now()}`, // Make username unique
+            avatar: "/diverse-user-avatars.png",
+            bio: "Social media enthusiast",
+            followers: 0,
+            following: 0,
+          },
+        });
+      }
 
       const comment = await prisma.comment.create({
         data: {
@@ -1229,3 +1260,9 @@ export const resolvers = {
     },
   },
 };
+
+// Check if we should use mock data (when Prisma is not available)
+const useMockData = !prisma;
+
+// Export the appropriate resolvers
+export const resolvers = useMockData ? mockResolvers : databaseResolvers;

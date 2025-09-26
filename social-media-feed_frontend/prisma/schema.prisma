@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -17,7 +17,11 @@ model User {
   email     String?  @unique
   avatar    String?
   bio       String?
+  location  String?
+  website   String?
   posts     Int      @default(0)
+  followers Int      @default(0)
+  following Int      @default(0)
   createdAt DateTime @default(now())
 
   // Relations
@@ -26,8 +30,8 @@ model User {
   likes         PostLike[]
   commentLikes  CommentLike[]
   bookmarks     Bookmark[]
-  following     Follow[] @relation("Follower")
-  followers     Follow[] @relation("Following")
+  followingUsers Follow[] @relation("Follower")
+  followerUsers  Follow[] @relation("Following")
   shares        PostShare[]
 
   @@map("users")

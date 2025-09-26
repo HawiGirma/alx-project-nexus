@@ -14,6 +14,8 @@ async function main() {
       avatar: "/woman-developer.png",
       bio: "Full-stack developer passionate about React and Node.js",
       posts: 45,
+      followers: 1250,
+      following: 340,
     },
   });
 
@@ -27,6 +29,8 @@ async function main() {
       avatar: "/man-runner.png",
       bio: "UI/UX Designer & fitness enthusiast",
       posts: 32,
+      followers: 890,
+      following: 210,
     },
   });
 
@@ -40,6 +44,8 @@ async function main() {
       avatar: "/woman-designer.png",
       bio: "Creative designer and art director",
       posts: 67,
+      followers: 2100,
+      following: 180,
     },
   });
 
@@ -54,6 +60,8 @@ async function main() {
       avatar: "/diverse-user-avatars.png",
       bio: "Social media enthusiast",
       posts: 0,
+      followers: 0,
+      following: 0,
     },
   });
 
