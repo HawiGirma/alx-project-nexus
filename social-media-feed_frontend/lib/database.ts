@@ -102,7 +102,8 @@ const mockComments = [
   },
   {
     id: "comment-2",
-    content: "Love the real-time updates feature! How did you implement the WebSocket connection?",
+    content:
+      "Love the real-time updates feature! How did you implement the WebSocket connection?",
     postId: "1",
     authorId: "user-3",
     createdAt: new Date(Date.now() - 1000 * 60 * 20), // 20 minutes ago
@@ -146,25 +147,25 @@ export const prisma = {
     findMany: async (args?: any) => {
       console.log("Mock posts query:", args);
       let posts = [...mockPosts];
-      
+
       // Apply pagination
       if (args?.take) {
         posts = posts.slice(0, args.take);
       }
-      
+
       // Apply cursor-based pagination
       if (args?.cursor?.id) {
-        const cursorIndex = posts.findIndex(p => p.id === args.cursor.id);
+        const cursorIndex = posts.findIndex((p) => p.id === args.cursor.id);
         if (cursorIndex > -1) {
           posts = posts.slice(cursorIndex + 1);
         }
       }
-      
+
       // Apply skip
       if (args?.skip) {
         posts = posts.slice(args.skip);
       }
-      
+
       return posts;
     },
     findUnique: async (args?: any) => {
@@ -192,7 +193,7 @@ export const prisma = {
     },
     update: async (args?: any) => {
       console.log("Mock post update:", args);
-      const index = mockPosts.findIndex(p => p.id === args.where.id);
+      const index = mockPosts.findIndex((p) => p.id === args.where.id);
       if (index > -1) {
         mockPosts[index] = { ...mockPosts[index], ...args.data };
         return mockPosts[index];
@@ -201,7 +202,7 @@ export const prisma = {
     },
     delete: async (args?: any) => {
       console.log("Mock post delete:", args);
-      const index = mockPosts.findIndex(p => p.id === args.where.id);
+      const index = mockPosts.findIndex((p) => p.id === args.where.id);
       if (index > -1) {
         mockPosts.splice(index, 1);
       }
@@ -269,13 +270,13 @@ export const prisma = {
     findMany: async (args?: any) => {
       console.log("Mock comments query:", args);
       if (args?.where?.postId) {
-        return mockComments.filter(c => c.postId === args.where.postId);
+        return mockComments.filter((c) => c.postId === args.where.postId);
       }
       return mockComments;
     },
     findUnique: async (args?: any) => {
       console.log("Mock comment query:", args);
-      return mockComments.find(c => c.id === args.where.id) || null;
+      return mockComments.find((c) => c.id === args.where.id) || null;
     },
     create: async (args?: any) => {
       console.log("Mock comment create:", args);
@@ -302,7 +303,7 @@ export const prisma = {
     },
     delete: async (args?: any) => {
       console.log("Mock comment delete:", args);
-      const index = mockComments.findIndex(c => c.id === args.where.id);
+      const index = mockComments.findIndex((c) => c.id === args.where.id);
       if (index > -1) {
         mockComments.splice(index, 1);
       }
@@ -313,17 +314,20 @@ export const prisma = {
     findMany: async (args?: any) => {
       console.log("Mock post likes query:", args);
       if (args?.where?.postId) {
-        return mockLikes.filter(l => l.postId === args.where.postId);
+        return mockLikes.filter((l) => l.postId === args.where.postId);
       }
       return mockLikes;
     },
     findUnique: async (args?: any) => {
       console.log("Mock post like query:", args);
       if (args?.where?.userId_postId) {
-        return mockLikes.find(l => 
-          l.userId === args.where.userId_postId.userId && 
-          l.postId === args.where.userId_postId.postId
-        ) || null;
+        return (
+          mockLikes.find(
+            (l) =>
+              l.userId === args.where.userId_postId.userId &&
+              l.postId === args.where.userId_postId.postId
+          ) || null
+        );
       }
       return null;
     },
@@ -344,9 +348,10 @@ export const prisma = {
     delete: async (args?: any) => {
       console.log("Mock post like delete:", args);
       if (args?.where?.userId_postId) {
-        const index = mockLikes.findIndex(l => 
-          l.userId === args.where.userId_postId.userId && 
-          l.postId === args.where.userId_postId.postId
+        const index = mockLikes.findIndex(
+          (l) =>
+            l.userId === args.where.userId_postId.userId &&
+            l.postId === args.where.userId_postId.postId
         );
         if (index > -1) {
           mockLikes.splice(index, 1);
@@ -357,8 +362,9 @@ export const prisma = {
     deleteMany: async (args?: any) => {
       console.log("Mock post like deleteMany:", args);
       if (args?.where?.userId && args?.where?.postId) {
-        const index = mockLikes.findIndex(l => 
-          l.userId === args.where.userId && l.postId === args.where.postId
+        const index = mockLikes.findIndex(
+          (l) =>
+            l.userId === args.where.userId && l.postId === args.where.postId
         );
         if (index > -1) {
           mockLikes.splice(index, 1);
