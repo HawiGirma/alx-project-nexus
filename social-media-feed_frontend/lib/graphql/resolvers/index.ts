@@ -28,6 +28,32 @@ async function isPostLikedByUser(
   }
 }
 
+// Helper function to get like count for a post
+async function getPostLikeCount(postId: string): Promise<number> {
+  try {
+    const likes = await prisma.postLike.findMany({
+      where: { postId },
+    });
+    return likes.length;
+  } catch (error) {
+    console.error("Error getting like count:", error);
+    return 0;
+  }
+}
+
+// Helper function to get comment count for a post
+async function getPostCommentCount(postId: string): Promise<number> {
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { postId },
+    });
+    return comments.length;
+  } catch (error) {
+    console.error("Error getting comment count:", error);
+    return 0;
+  }
+}
+
 // Helper function to check if user liked a comment
 async function isCommentLikedByUser(
   commentId: string,
@@ -101,8 +127,8 @@ export const resolvers = {
       const postsWithLikes = await Promise.all(
         posts.map(async (post) => ({
           ...post,
-          likes: post._count.likes,
-          comments: post._count.comments,
+          likes: await getPostLikeCount(post.id),
+          comments: await getPostCommentCount(post.id),
           shares: post._count.shares,
           isLiked: await isPostLikedByUser(post.id, currentUserId),
           isBookmarked: await isPostBookmarkedByUser(post.id, currentUserId),
@@ -655,11 +681,13 @@ export const resolvers = {
 
       const isLiked = !existingLike;
       const isBookmarked = await isPostBookmarkedByUser(post.id, currentUserId);
+      const likeCount = await getPostLikeCount(post.id);
+      const commentCount = await getPostCommentCount(post.id);
 
       return {
         ...post,
-        likes: post._count.likes,
-        comments: post._count.comments,
+        likes: likeCount,
+        comments: commentCount,
         shares: post._count.shares,
         isLiked,
         isBookmarked,
