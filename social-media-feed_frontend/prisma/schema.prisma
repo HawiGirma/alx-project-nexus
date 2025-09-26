@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  username  String   @unique
+  email     String?  @unique
+  avatar    String?
+  bio       String?
+  posts     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relations
+  authoredPosts Post[] @relation("PostAuthor")
+  comments      Comment[] @relation("CommentAuthor")
+  likes         PostLike[]
+  commentLikes  CommentLike[]
+  bookmarks     Bookmark[]
+  following     Follow[] @relation("Follower")
+  followers     Follow[] @relation("Following")
+  shares        PostShare[]
+
+  @@map("users")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author     User         @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  likes      PostLike[]
+  bookmarks  Bookmark[]
+  shares     PostShare[]
+  media      Media?
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author User         @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  post   Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  likes  CommentLike[]
+
+  @@map("comments")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  type      MediaType
+  url       String
+  thumbnail String?
+  postId    String   @unique
+  createdAt DateTime @default(now())
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("media")
+}
+
+model PostLike {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("post_likes")
+}
+
+model CommentLike {
+  id        String @id @default(cuid())
+  userId    String
+  commentId String
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
+}
+
+model Bookmark {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+
+  // Relations
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model PostShare {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("post_shares")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}

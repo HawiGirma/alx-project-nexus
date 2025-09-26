@@ -1,96 +1,130 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { motion, useInView } from "framer-motion"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark } from "lucide-react"
-import { type Post, graphqlClient } from "@/lib/graphql"
-import { CommentSection } from "@/components/comment-section"
-import { ShareDialog } from "@/components/share-dialog"
-import { cn } from "@/lib/utils"
+import { useState, useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Heart,
+  MessageCircle,
+  Share,
+  MoreHorizontal,
+  Bookmark,
+} from "lucide-react";
+import { type Post, graphqlClient } from "@/lib/graphql";
+import { CommentSection } from "@/components/comment-section";
+import { ShareDialog } from "@/components/share-dialog";
+import { cn } from "@/lib/utils";
 
 interface AnimatedPostCardProps {
-  post: Post
-  onPostUpdate?: (updatedPost: Post) => void
-  index: number
+  post: Post;
+  onPostUpdate?: (updatedPost: Post) => void;
+  index: number;
 }
 
-export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCardProps) {
-  const [isLiking, setIsLiking] = useState(false)
-  const [isSharing, setIsSharing] = useState(false)
-  const [localPost, setLocalPost] = useState(post)
-  const [showComments, setShowComments] = useState(false)
-  const [showShareDialog, setShowShareDialog] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
-  const [likeCount, setLikeCount] = useState(localPost.likes)
+export function AnimatedPostCard({
+  post,
+  onPostUpdate,
+  index,
+}: AnimatedPostCardProps) {
+  const [isLiking, setIsLiking] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [localPost, setLocalPost] = useState(post);
+  const [showComments, setShowComments] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [likeCount, setLikeCount] = useState(localPost.likes);
 
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const handleLike = async () => {
-    if (isLiking) return
+    if (isLiking) return;
 
     // Optimistic update for immediate feedback
-    const newLikedState = !localPost.isLiked
-    const newLikeCount = likeCount + (newLikedState ? 1 : -1)
+    const newLikedState = !localPost.isLiked;
+    const newLikeCount = likeCount + (newLikedState ? 1 : -1);
 
-    setLikeCount(newLikeCount)
-    setLocalPost((prev) => ({ ...prev, isLiked: newLikedState, likes: newLikeCount }))
-    setIsLiking(true)
+    setLikeCount(newLikeCount);
+    setLocalPost((prev) => ({
+      ...prev,
+      isLiked: newLikedState,
+      likes: newLikeCount,
+    }));
+    setIsLiking(true);
 
     try {
-      const actualLikedState = await graphqlClient.likePost(localPost.id)
+      const actualLikedState = await graphqlClient.likePost(localPost.id);
       const updatedPost = {
         ...localPost,
         isLiked: actualLikedState,
         likes: newLikeCount,
-      }
-      setLocalPost(updatedPost)
-      onPostUpdate?.(updatedPost)
+      };
+      setLocalPost(updatedPost);
+      onPostUpdate?.(updatedPost);
     } catch (error) {
       // Revert optimistic update on error
-      setLikeCount(localPost.likes)
-      setLocalPost((prev) => ({ ...prev, isLiked: localPost.isLiked, likes: localPost.likes }))
-      console.error("Failed to like post:", error)
+      setLikeCount(localPost.likes);
+      setLocalPost((prev) => ({
+        ...prev,
+        isLiked: localPost.isLiked,
+        likes: localPost.likes,
+      }));
+      console.error("Failed to like post:", error);
     } finally {
-      setIsLiking(false)
+      setIsLiking(false);
     }
-  }
+  };
 
   const handleShare = async () => {
-    if (isSharing) return
+    if (isSharing) return;
 
-    setIsSharing(true)
+    setIsSharing(true);
     try {
-      await graphqlClient.sharePost(localPost.id)
+      await graphqlClient.sharePost(localPost.id);
       const updatedPost = {
         ...localPost,
         shares: localPost.shares + 1,
-      }
-      setLocalPost(updatedPost)
-      onPostUpdate?.(updatedPost)
+      };
+      setLocalPost(updatedPost);
+      onPostUpdate?.(updatedPost);
     } catch (error) {
-      console.error("Failed to share post:", error)
+      console.error("Failed to share post:", error);
     } finally {
-      setIsSharing(false)
+      setIsSharing(false);
     }
-  }
+  };
 
   const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
-  }
+    setIsBookmarked(!isBookmarked);
+  };
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInHours < 1) return "Just now"
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    return `${Math.floor(diffInHours / 24)}d ago`
-  }
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    // For older posts, show the actual date
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    });
+  };
 
   const cardVariants = {
     hidden: {
@@ -108,7 +142,7 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
         ease: "easeOut",
       },
     },
-  }
+  };
 
   const likeVariants = {
     liked: {
@@ -119,7 +153,7 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
       scale: 1,
       transition: { duration: 0.2 },
     },
-  }
+  };
 
   return (
     <>
@@ -143,13 +177,21 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                 transition={{ delay: index * 0.1 + 0.2 }}
               >
                 <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-                  <AvatarImage src={localPost.author.avatar || "/placeholder.svg"} alt={localPost.author.name} />
-                  <AvatarFallback>{localPost.author.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={localPost.author.avatar || "/placeholder.svg"}
+                    alt={localPost.author.name}
+                  />
+                  <AvatarFallback>
+                    {localPost.author.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold text-sm">{localPost.author.name}</p>
+                  <p className="font-semibold text-sm">
+                    {localPost.author.name}
+                  </p>
                   <p className="text-muted-foreground text-xs">
-                    @{localPost.author.username} • {formatTimeAgo(localPost.createdAt)}
+                    @{localPost.author.username} •{" "}
+                    {formatTimeAgo(localPost.createdAt)}
                   </p>
                 </div>
               </motion.div>
@@ -159,22 +201,38 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 + 0.3 }}
               >
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleBookmark}
-                    className={cn("transition-colors", isBookmarked && "text-primary")}
+                    className={cn(
+                      "transition-colors",
+                      isBookmarked && "text-primary"
+                    )}
                   >
                     <motion.div
-                      animate={isBookmarked ? { scale: [1, 1.2, 1] } : { scale: 1 }}
+                      animate={
+                        isBookmarked ? { scale: [1, 1.2, 1] } : { scale: 1 }
+                      }
                       transition={{ duration: 0.3 }}
                     >
-                      <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+                      <Bookmark
+                        className={cn(
+                          "h-4 w-4",
+                          isBookmarked && "fill-current"
+                        )}
+                      />
                     </motion.div>
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button variant="ghost" size="sm">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
@@ -227,7 +285,10 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
               transition={{ delay: index * 0.1 + 0.6 }}
             >
               <div className="flex items-center space-x-6">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
@@ -235,11 +296,19 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                     disabled={isLiking}
                     className={cn(
                       "flex items-center space-x-2 transition-colors",
-                      localPost.isLiked && "text-red-500 hover:text-red-600",
+                      localPost.isLiked && "text-red-500 hover:text-red-600"
                     )}
                   >
-                    <motion.div variants={likeVariants} animate={localPost.isLiked ? "liked" : "unliked"}>
-                      <Heart className={cn("h-4 w-4 transition-all", localPost.isLiked && "fill-current")} />
+                    <motion.div
+                      variants={likeVariants}
+                      animate={localPost.isLiked ? "liked" : "unliked"}
+                    >
+                      <Heart
+                        className={cn(
+                          "h-4 w-4 transition-all",
+                          localPost.isLiked && "fill-current"
+                        )}
+                      />
                     </motion.div>
                     <motion.span
                       className="text-xs"
@@ -253,7 +322,10 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                   </Button>
                 </motion.div>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
@@ -265,7 +337,10 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                   </Button>
                 </motion.div>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
@@ -273,7 +348,10 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
                     disabled={isSharing}
                     className="flex items-center space-x-2"
                   >
-                    <motion.div animate={isSharing ? { rotate: 360 } : { rotate: 0 }} transition={{ duration: 0.5 }}>
+                    <motion.div
+                      animate={isSharing ? { rotate: 360 } : { rotate: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
                       <Share className="h-4 w-4" />
                     </motion.div>
                     <span className="text-xs">{localPost.shares}</span>
@@ -292,7 +370,11 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
             transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{ overflow: "hidden" }}
           >
-            <CommentSection postId={localPost.id} isOpen={showComments} onClose={() => setShowComments(false)} />
+            <CommentSection
+              postId={localPost.id}
+              isOpen={showComments}
+              onClose={() => setShowComments(false)}
+            />
           </motion.div>
         </Card>
       </motion.div>
@@ -304,5 +386,5 @@ export function AnimatedPostCard({ post, onPostUpdate, index }: AnimatedPostCard
         onShare={handleShare}
       />
     </>
-  )
+  );
 }

@@ -1,80 +1,102 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark } from "lucide-react"
-import { type Post, graphqlClient } from "@/lib/graphql"
-import { CommentSection } from "@/components/comment-section"
-import { ShareDialog } from "@/components/share-dialog"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Heart,
+  MessageCircle,
+  Share,
+  MoreHorizontal,
+  Bookmark,
+} from "lucide-react";
+import { type Post, graphqlClient } from "@/lib/graphql";
+import { CommentSection } from "@/components/comment-section";
+import { ShareDialog } from "@/components/share-dialog";
+import { cn } from "@/lib/utils";
 
 interface PostCardProps {
-  post: Post
-  onPostUpdate?: (updatedPost: Post) => void
+  post: Post;
+  onPostUpdate?: (updatedPost: Post) => void;
 }
 
 export function PostCard({ post, onPostUpdate }: PostCardProps) {
-  const [isLiking, setIsLiking] = useState(false)
-  const [isSharing, setIsSharing] = useState(false)
-  const [localPost, setLocalPost] = useState(post)
-  const [showComments, setShowComments] = useState(false)
-  const [showShareDialog, setShowShareDialog] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [isLiking, setIsLiking] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [localPost, setLocalPost] = useState(post);
+  const [showComments, setShowComments] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const handleLike = async () => {
-    if (isLiking) return
+    if (isLiking) return;
 
-    setIsLiking(true)
+    setIsLiking(true);
     try {
-      const newLikedState = await graphqlClient.likePost(localPost.id)
+      const newLikedState = await graphqlClient.likePost(localPost.id);
       const updatedPost = {
         ...localPost,
         isLiked: newLikedState,
         likes: localPost.likes + (newLikedState ? 1 : -1),
-      }
-      setLocalPost(updatedPost)
-      onPostUpdate?.(updatedPost)
+      };
+      setLocalPost(updatedPost);
+      onPostUpdate?.(updatedPost);
     } catch (error) {
-      console.error("Failed to like post:", error)
+      console.error("Failed to like post:", error);
     } finally {
-      setIsLiking(false)
+      setIsLiking(false);
     }
-  }
+  };
 
   const handleShare = async () => {
-    if (isSharing) return
+    if (isSharing) return;
 
-    setIsSharing(true)
+    setIsSharing(true);
     try {
-      await graphqlClient.sharePost(localPost.id)
+      await graphqlClient.sharePost(localPost.id);
       const updatedPost = {
         ...localPost,
         shares: localPost.shares + 1,
-      }
-      setLocalPost(updatedPost)
-      onPostUpdate?.(updatedPost)
+      };
+      setLocalPost(updatedPost);
+      onPostUpdate?.(updatedPost);
     } catch (error) {
-      console.error("Failed to share post:", error)
+      console.error("Failed to share post:", error);
     } finally {
-      setIsSharing(false)
+      setIsSharing(false);
     }
-  }
+  };
 
   const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
-  }
+    setIsBookmarked(!isBookmarked);
+  };
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInHours < 1) return "Just now"
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    return `${Math.floor(diffInHours / 24)}d ago`
-  }
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    // For older posts, show the actual date
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    });
+  };
 
   return (
     <>
@@ -83,13 +105,19 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={localPost.author.avatar || "/placeholder.svg"} alt={localPost.author.name} />
-                <AvatarFallback>{localPost.author.name.charAt(0)}</AvatarFallback>
+                <AvatarImage
+                  src={localPost.author.avatar || "/placeholder.svg"}
+                  alt={localPost.author.name}
+                />
+                <AvatarFallback>
+                  {localPost.author.name.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold text-sm">{localPost.author.name}</p>
                 <p className="text-muted-foreground text-xs">
-                  @{localPost.author.username} • {formatTimeAgo(localPost.createdAt)}
+                  @{localPost.author.username} •{" "}
+                  {formatTimeAgo(localPost.createdAt)}
                 </p>
               </div>
             </div>
@@ -98,9 +126,14 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleBookmark}
-                className={cn("transition-colors", isBookmarked && "text-primary")}
+                className={cn(
+                  "transition-colors",
+                  isBookmarked && "text-primary"
+                )}
               >
-                <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+                <Bookmark
+                  className={cn("h-4 w-4", isBookmarked && "fill-current")}
+                />
               </Button>
               <Button variant="ghost" size="sm">
                 <MoreHorizontal className="h-4 w-4" />
@@ -142,11 +175,15 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
                 disabled={isLiking}
                 className={cn(
                   "flex items-center space-x-2 transition-colors",
-                  localPost.isLiked && "text-red-500 hover:text-red-600",
+                  localPost.isLiked && "text-red-500 hover:text-red-600"
                 )}
               >
                 <Heart
-                  className={cn("h-4 w-4 transition-all", localPost.isLiked && "fill-current", isLiking && "scale-110")}
+                  className={cn(
+                    "h-4 w-4 transition-all",
+                    localPost.isLiked && "fill-current",
+                    isLiking && "scale-110"
+                  )}
                 />
                 <span className="text-xs">{localPost.likes}</span>
               </Button>
@@ -175,7 +212,11 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           </div>
         </CardFooter>
 
-        <CommentSection postId={localPost.id} isOpen={showComments} onClose={() => setShowComments(false)} />
+        <CommentSection
+          postId={localPost.id}
+          isOpen={showComments}
+          onClose={() => setShowComments(false)}
+        />
       </Card>
 
       <ShareDialog
@@ -185,5 +226,5 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
         onShare={handleShare}
       />
     </>
-  )
+  );
 }

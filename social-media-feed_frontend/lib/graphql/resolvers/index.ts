@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/database";
+import { authService } from "@/lib/auth";
 import { PubSub } from "graphql-subscriptions";
 
 // Define types locally instead of importing from Prisma
@@ -91,10 +92,15 @@ async function isPostBookmarkedByUser(
   }
 }
 
-// Helper function to get current user (mock for now)
+// Helper function to get current user
 function getCurrentUserId(): string {
-  // In a real app, this would come from JWT token or session
-  return "current-user";
+  // Get current user from auth service
+  const currentUser = authService.getCurrentUser();
+  if (!currentUser) {
+    // If no user is logged in, create a default user
+    return "current-user";
+  }
+  return currentUser.id;
 }
 
 export const resolvers = {
@@ -125,7 +131,7 @@ export const resolvers = {
 
       // Add isLiked and isBookmarked fields to each post
       const postsWithLikes = await Promise.all(
-        posts.map(async (post) => ({
+        posts.map(async (post: any) => ({
           ...post,
           likes: await getPostLikeCount(post.id),
           comments: await getPostCommentCount(post.id),
@@ -207,7 +213,7 @@ export const resolvers = {
       const currentUserId = getCurrentUserId();
 
       const commentsWithLikes = await Promise.all(
-        comments.map(async (comment) => ({
+        comments.map(async (comment: any) => ({
           ...comment,
           likes: comment._count.likes,
           isLiked: await isCommentLikedByUser(comment.id, currentUserId),
@@ -278,7 +284,7 @@ export const resolvers = {
         },
       });
 
-      return users.map((user) => ({
+      return users.map((user: any) => ({
         ...user,
         posts: user._count.authoredPosts,
       }));
@@ -310,7 +316,7 @@ export const resolvers = {
       const currentUserId = getCurrentUserId();
 
       const postsWithLikes = await Promise.all(
-        posts.map(async (post) => ({
+        posts.map(async (post: any) => ({
           ...post,
           likes: post._count.likes,
           comments: post._count.comments,
@@ -353,7 +359,7 @@ export const resolvers = {
       const currentUserId = getCurrentUserId();
 
       const postsWithLikes = await Promise.all(
-        posts.map(async (post) => ({
+        posts.map(async (post: any) => ({
           ...post,
           likes: post._count.likes,
           comments: post._count.comments,
@@ -442,11 +448,11 @@ export const resolvers = {
       const now = new Date();
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-      posts.forEach((post) => {
+      posts.forEach((post: any) => {
         const hashtags = post.content.match(/#\w+/g) || [];
         const isRecent = new Date(post.createdAt) > oneDayAgo;
 
-        hashtags.forEach((hashtag) => {
+        hashtags.forEach((hashtag: any) => {
           const cleanHashtag = hashtag.substring(1).toLowerCase();
           hashtagCounts[cleanHashtag] = (hashtagCounts[cleanHashtag] || 0) + 1;
 
@@ -536,7 +542,7 @@ export const resolvers = {
         select: { followingId: true },
       });
 
-      const followingIds = following.map((f) => f.followingId);
+      const followingIds = following.map((f: any) => f.followingId);
       followingIds.push(currentUserId); // Exclude current user
 
       // Get suggested users (users with most posts that current user doesn't follow)
@@ -612,7 +618,7 @@ export const resolvers = {
           },
         ];
 
-        const existingUserIds = new Set(suggestedUsers.map((u) => u.id));
+        const existingUserIds = new Set(suggestedUsers.map((u: any) => u.id));
         const additionalUsers = defaultUsers
           .filter((u) => !existingUserIds.has(u.id))
           .slice(0, first - suggestedUsers.length);
@@ -620,7 +626,7 @@ export const resolvers = {
         suggestedUsers.push(...additionalUsers);
       }
 
-      return suggestedUsers.map((user) => ({
+      return suggestedUsers.map((user: any) => ({
         ...user,
         posts: user._count.authoredPosts,
       }));
@@ -743,6 +749,24 @@ export const resolvers = {
       }: { content: string; mediaUrl?: string; mediaType?: MediaType }
     ) => {
       const currentUserId = getCurrentUserId();
+
+      // Ensure the current user exists in the database
+      let user = await prisma.user.findUnique({
+        where: { id: currentUserId },
+      });
+
+      if (!user) {
+        // Create the current user if they don't exist
+        user = await prisma.user.create({
+          data: {
+            id: currentUserId,
+            name: "Current User",
+            username: "currentuser",
+            avatar: "/diverse-user-avatars.png",
+            bio: "Social media enthusiast",
+          },
+        });
+      }
 
       const post = await prisma.post.create({
         data: {
@@ -1199,14 +1223,14 @@ export const resolvers = {
 
   Subscription: {
     postAdded: {
-      subscribe: () => pubsub.asyncIterator("POST_ADDED"),
+      subscribe: () => (pubsub as any).asyncIterator("POST_ADDED"),
     },
     commentAdded: {
-      subscribe: () => pubsub.asyncIterator("COMMENT_ADDED"),
+      subscribe: () => (pubsub as any).asyncIterator("COMMENT_ADDED"),
     },
     postLiked: {
       subscribe: (_: any, { postId }: { postId: string }) =>
-        pubsub.asyncIterator(`POST_LIKED_${postId}`),
+        (pubsub as any).asyncIterator(`POST_LIKED_${postId}`),
     },
   },
 };
