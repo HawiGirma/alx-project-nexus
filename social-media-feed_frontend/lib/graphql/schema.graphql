@@ -1,0 +1,120 @@
+type User {
+  id: ID!
+  name: String!
+  username: String!
+  avatar: String
+  bio: String
+  location: String
+  website: String
+  followers: Int!
+  following: Int!
+  posts: Int!
+  createdAt: String!
+}
+
+type Media {
+  type: MediaType!
+  url: String!
+  thumbnail: String
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+type Post {
+  id: ID!
+  content: String!
+  author: User!
+  createdAt: String!
+  likes: Int!
+  comments: Int!
+  shares: Int!
+  isLiked: Boolean!
+  isBookmarked: Boolean!
+  media: Media
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  post: Post!
+  createdAt: String!
+  likes: Int!
+  isLiked: Boolean!
+}
+
+type PostConnection {
+  edges: [PostEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PostEdge {
+  node: Post!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type TrendingTopic {
+  id: ID!
+  hashtag: String!
+  posts: Int!
+  trend: TrendDirection!
+}
+
+enum TrendDirection {
+  UP
+  DOWN
+  STABLE
+}
+
+type Query {
+  posts(first: Int, after: String): PostConnection!
+  post(id: ID!): Post
+  user(id: ID!): User
+  userByUsername(username: String!): User
+  me: User
+  comments(postId: ID!, first: Int, after: String): [Comment!]!
+  searchUsers(query: String!, first: Int): [User!]!
+  searchPosts(query: String!, first: Int): [Post!]!
+  userPosts(userId: ID!, first: Int, after: String): PostConnection!
+  trendingTopics(first: Int): [TrendingTopic!]!
+  suggestedUsers(first: Int): [User!]!
+}
+
+type Mutation {
+  likePost(postId: ID!): Post!
+  unlikePost(postId: ID!): Post!
+  likeComment(commentId: ID!): Comment!
+  unlikeComment(commentId: ID!): Comment!
+  createPost(content: String!, mediaUrl: String, mediaType: MediaType): Post!
+  deletePost(postId: ID!): Boolean!
+  createComment(postId: ID!, content: String!): Comment!
+  deleteComment(commentId: ID!): Boolean!
+  sharePost(postId: ID!): Post!
+  bookmarkPost(postId: ID!): Post!
+  unbookmarkPost(postId: ID!): Post!
+  followUser(userId: ID!): User!
+  unfollowUser(userId: ID!): User!
+  updateProfile(
+    name: String
+    bio: String
+    avatar: String
+    location: String
+    website: String
+  ): User!
+}
+
+type Subscription {
+  postAdded: Post!
+  postLiked(postId: ID!): Post!
+  commentAdded(postId: ID!): Comment!
+}
