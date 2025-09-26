@@ -28,21 +28,19 @@ import {
   Download,
   Upload,
 } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
-  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   // Profile settings
   const [profileData, setProfileData] = useState({
-    name: user?.name || "John Doe",
-    username: user?.username || "johndoe",
-    email: user?.email || "john@example.com",
-    bio: "Software developer passionate about creating amazing user experiences.",
+    name: "Guest User",
+    username: "guest",
+    email: "guest@example.com",
+    bio: "Welcome to SocialFeed! This is a guest account.",
     location: "San Francisco, CA",
-    website: "https://johndoe.dev",
+    website: "https://example.com",
   });
 
   // Privacy settings
@@ -54,7 +52,6 @@ export default function SettingsPage() {
     allowMentions: true,
     allowTags: true,
   });
-
 
   // Appearance settings
   const [appearanceSettings, setAppearanceSettings] = useState({
@@ -84,7 +81,6 @@ export default function SettingsPage() {
       description: "Your privacy settings have been saved.",
     });
   };
-
 
   const handleSaveAppearance = () => {
     toast({
@@ -126,31 +122,6 @@ export default function SettingsPage() {
       description: "We'll email you when your data is ready for download.",
     });
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AnimatedFeedHeader />
-        <main className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-center py-12"
-          >
-            <Settings className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">
-              Sign in to access settings
-            </h2>
-            <p className="text-muted-foreground">
-              You need to be signed in to manage your account settings.
-            </p>
-          </motion.div>
-        </main>
-        <AnimatedMobileNavigation />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
@@ -495,7 +466,6 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
 
-
             {/* Appearance Tab */}
             <TabsContent value="appearance" className="space-y-6">
               <Card>
@@ -652,8 +622,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-
-
-
-

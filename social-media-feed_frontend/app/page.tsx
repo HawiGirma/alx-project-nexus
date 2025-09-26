@@ -6,7 +6,6 @@ import { AnimatedFeedSidebar } from "@/components/animated-sidebar";
 import { AnimatedMobileNavigation } from "@/components/animated-mobile-nav";
 import { usePostsGraphQL } from "@/hooks/use-posts-graphql";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
-import { useAuth } from "@/contexts/auth-context";
 import { CreatePostDialog } from "@/components/create-post-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -15,8 +14,6 @@ import { GraphQLLoading, FeedSkeleton } from "@/components/graphql-loading";
 import { ErrorMessage } from "@/components/error-message";
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-
   const {
     posts,
     newPosts,
@@ -41,7 +38,7 @@ export default function HomePage() {
     loadNewPosts();
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <AnimatedFeedHeader />
@@ -108,22 +105,20 @@ export default function HomePage() {
               </CreatePostDialog>
             </motion.div>
 
-            {!isAuthenticated && (
-              <motion.div
-                className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h2 className="text-lg font-semibold mb-2">
-                  Welcome to SocialFeed!
-                </h2>
-                <p className="text-muted-foreground text-sm">
-                  Create posts, like, comment, and connect with others in the
-                  community.
-                </p>
-              </motion.div>
-            )}
+            <motion.div
+              className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-lg font-semibold mb-2">
+                Welcome to SocialFeed!
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Create posts, like, comment, and connect with others in the
+                community.
+              </p>
+            </motion.div>
 
             <div className="space-y-6">
               <AnimatePresence mode="popLayout">

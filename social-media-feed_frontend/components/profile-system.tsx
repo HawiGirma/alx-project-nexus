@@ -20,30 +20,8 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/auth-context";
 
 export function ProfileSystem() {
-  const { user, isAuthenticated, signOut } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Sign out failed:", error);
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          Sign In
-        </Button>
-        <Button size="sm">Sign Up</Button>
-      </div>
-    );
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -57,9 +35,9 @@ export function ProfileSystem() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium">{user?.name || "You"}</p>
+            <p className="font-medium">Guest User</p>
             <p className="w-[200px] truncate text-sm text-muted-foreground">
-              @{user?.username || "you"}
+              @guest
             </p>
           </div>
         </div>
@@ -81,11 +59,6 @@ export function ProfileSystem() {
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

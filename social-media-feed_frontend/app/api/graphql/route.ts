@@ -24,10 +24,8 @@ const yoga = createYoga({
   schema,
   graphqlEndpoint: "/api/graphql",
   context: async ({ request }) => {
-    // You can add authentication context here
     return {
       request,
-      // Add user context from JWT token or session
     };
   },
 });

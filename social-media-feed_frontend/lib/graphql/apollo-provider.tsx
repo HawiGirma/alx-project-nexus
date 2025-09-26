@@ -8,27 +8,12 @@ import {
   ApolloProvider as BaseApolloProvider,
   createHttpLink,
 } from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { from } from "@apollo/client";
 
 // HTTP Link for GraphQL endpoint
 const httpLink = createHttpLink({
   uri: "/api/graphql",
-});
-
-// Auth link to add authorization headers
-const authLink = setContext((_, { headers }) => {
-  // Get the authentication token from local storage if it exists
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
-
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
 });
 
 // Error link for handling GraphQL and network errors
@@ -48,7 +33,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
 // Apollo Client configuration
 const client = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
+  link: from([errorLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

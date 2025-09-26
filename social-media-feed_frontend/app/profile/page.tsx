@@ -33,7 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GraphQLPostCard } from "@/components/graphql-post-card";
-import { useAuth } from "@/contexts/auth-context";
 import { usePostsGraphQL } from "@/hooks/use-posts-graphql";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
 import { ProfileEditDialog } from "@/components/profile-edit-dialog";
@@ -58,7 +57,6 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -85,31 +83,6 @@ export default function ProfilePage() {
       return "Unknown date";
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AnimatedFeedHeader />
-        <main className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-center py-12"
-          >
-            <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">
-              Sign in to view profiles
-            </h2>
-            <p className="text-muted-foreground">
-              You need to be signed in to view user profiles.
-            </p>
-          </motion.div>
-        </main>
-        <AnimatedMobileNavigation />
-      </div>
-    );
-  }
 
   if (loading) {
     return (

@@ -25,7 +25,6 @@ import {
   UserPlus,
   Check,
 } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
 import { useSearchParams } from "next/navigation";
 
 interface SearchResult {
@@ -50,7 +49,6 @@ interface TrendingHashtag {
 }
 
 export default function SearchPage() {
-  const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [activeTab, setActiveTab] = useState("all");
@@ -224,29 +222,6 @@ export default function SearchPage() {
         return Search;
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AnimatedFeedHeader />
-        <main className="container mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-center py-12"
-          >
-            <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">Sign in to search</h2>
-            <p className="text-muted-foreground">
-              You need to be signed in to search for users, posts, and hashtags.
-            </p>
-          </motion.div>
-        </main>
-        <AnimatedMobileNavigation />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">

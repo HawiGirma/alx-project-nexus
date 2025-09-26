@@ -2,7 +2,6 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { AuthProvider } from "@/contexts/auth-context";
 import { ApolloProvider } from "@/lib/apollo-provider";
 import { GraphQLErrorBoundary } from "@/components/graphql-error-boundary";
 import { Toaster } from "@/components/ui/toaster";
@@ -32,10 +31,8 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <GraphQLErrorBoundary>
             <ApolloProvider>
-              <AuthProvider>
-                {children}
-                <Toaster />
-              </AuthProvider>
+              {children}
+              <Toaster />
             </ApolloProvider>
           </GraphQLErrorBoundary>
         </Suspense>
