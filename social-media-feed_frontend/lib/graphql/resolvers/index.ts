@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/database";
 import { PubSub } from "graphql-subscriptions";
-import type { Post, User, Comment, MediaType } from "@prisma/client";
+
+// Define types locally instead of importing from Prisma
+type MediaType = "IMAGE" | "VIDEO" | "GIF";
 
 // Create a PubSub instance for subscriptions
 export const pubsub = new PubSub();
@@ -353,7 +355,6 @@ export const resolvers = {
         },
       };
     },
-
 
     me: async () => {
       const currentUserId = getCurrentUserId();
@@ -1027,7 +1028,6 @@ export const resolvers = {
         posts: user._count.authoredPosts,
       };
     },
-
 
     bookmarkPost: async (_: any, { postId }: { postId: string }) => {
       const currentUserId = getCurrentUserId();
