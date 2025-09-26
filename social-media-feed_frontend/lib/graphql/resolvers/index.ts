@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/database";
-import { authService } from "@/lib/auth";
 import { PubSub } from "graphql-subscriptions";
 
 // Define types locally instead of importing from Prisma
@@ -94,13 +93,9 @@ async function isPostBookmarkedByUser(
 
 // Helper function to get current user
 function getCurrentUserId(): string {
-  // Get current user from auth service
-  const currentUser = authService.getCurrentUser();
-  if (!currentUser) {
-    // If no user is logged in, create a default user
-    return "current-user";
-  }
-  return currentUser.id;
+  // For server-side GraphQL resolvers, we'll use a default user ID
+  // In a real app, this would come from JWT token or session context
+  return "current-user";
 }
 
 export const resolvers = {
