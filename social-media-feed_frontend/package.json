@@ -12,7 +12,9 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "codegen": "graphql-codegen",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "deploy:production": "node scripts/deploy-production.js",
+    "deploy:production:seed": "node scripts/deploy-production.js --seed"
   },
   "dependencies": {
     "@apollo/client": "^4.0.5",

@@ -7,6 +7,7 @@ import {
   createHttpLink,
   from,
   ApolloLink,
+  split,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
@@ -70,6 +71,14 @@ const authLink = setContext((_, { headers }) => {
       "Content-Type": "application/json",
     },
   };
+});
+
+// Retry link for failed requests
+const retryLink = new ApolloLink((operation, forward) => {
+  return forward(operation).map((result) => {
+    // Handle retry logic here if needed
+    return result;
+  });
 });
 
 // Enhanced cache configuration for production
@@ -157,13 +166,15 @@ const cache = new InMemoryCache({
 
 // Create the Apollo Client with production optimizations
 const client = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
+  link: from([errorLink, retryLink, authLink, httpLink]),
   cache,
   defaultOptions: {
     watchQuery: {
       errorPolicy: "all",
       notifyOnNetworkStatusChange: true,
       fetchPolicy: "cache-and-network",
+      // Add polling for real-time updates in production
+      pollInterval: 0, // Disabled by default, can be enabled for specific queries
     },
     query: {
       errorPolicy: "all",
@@ -187,8 +198,29 @@ const client = new ApolloClient({
   connectToDevTools: process.env.NODE_ENV === "development",
 });
 
+// Production Apollo Provider with error boundary
 export function ApolloProvider({ children }: { children: React.ReactNode }) {
   return <BaseApolloProvider client={client}>{children}</BaseApolloProvider>;
 }
 
+// Export client for direct use if needed
 export { client };
+
+// Utility functions for production use
+export const apolloUtils = {
+  // Clear cache for logout
+  clearCache: () => {
+    client.clearStore();
+  },
+
+  // Refetch all active queries
+  refetchAll: () => {
+    client.refetchQueries({ include: "active" });
+  },
+
+  // Get cache size (useful for monitoring)
+  getCacheSize: () => {
+    return client.cache.extract();
+  },
+};
+

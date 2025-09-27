@@ -1,15 +1,12 @@
-// Database implementation using Prisma
+// Production database configuration
 import { PrismaClient } from "@prisma/client";
-
-// Create a single instance of PrismaClient
-let prisma: PrismaClient;
 
 // Global variable to prevent multiple instances in development
 declare global {
   var __prisma: PrismaClient | undefined;
 }
 
-// Production-optimized Prisma client configuration
+// Create a single instance of PrismaClient with production optimizations
 function createPrismaClient(): PrismaClient {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -34,6 +31,9 @@ function createPrismaClient(): PrismaClient {
     }),
   });
 }
+
+// Initialize Prisma client based on environment
+let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === "production") {
   // In production, create a new instance
@@ -71,3 +71,4 @@ export async function disconnectDatabase(): Promise<void> {
 
 // Export the prisma instance
 export { prisma };
+

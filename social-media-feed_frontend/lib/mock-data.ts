@@ -260,3 +260,5 @@ export function searchMockPosts(query: string, first: number = 10) {
     .filter((post) => post.content.toLowerCase().includes(lowercaseQuery))
     .slice(0, first);
 }
+
+

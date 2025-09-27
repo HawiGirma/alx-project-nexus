@@ -266,8 +266,8 @@ export const databaseResolvers = {
       const users = await prisma.user.findMany({
         where: {
           OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { username: { contains: query, mode: "insensitive" } },
+            { name: { contains: query } },
+            { username: { contains: query } },
           ],
         },
         take: first,
@@ -292,7 +292,7 @@ export const databaseResolvers = {
     ) => {
       const posts = await prisma.post.findMany({
         where: {
-          content: { contains: query, mode: "insensitive" },
+          content: { contains: query },
         },
         take: first,
         orderBy: { createdAt: "desc" },
@@ -574,6 +574,9 @@ export const databaseResolvers = {
             username: "emmawilson",
             avatar: "/woman-developer.png",
             bio: "Full-stack developer passionate about React and Node.js",
+            location: null,
+            website: null,
+            email: null,
             followers: 1250,
             following: 340,
             posts: 45,
@@ -586,6 +589,9 @@ export const databaseResolvers = {
             username: "davidkim",
             avatar: "/man-runner.png",
             bio: "UI/UX Designer & fitness enthusiast",
+            location: null,
+            website: null,
+            email: null,
             followers: 890,
             following: 210,
             posts: 32,
@@ -598,6 +604,9 @@ export const databaseResolvers = {
             username: "sofiarodriguez",
             avatar: "/woman-designer.png",
             bio: "Creative designer and art director",
+            location: null,
+            website: null,
+            email: null,
             followers: 2100,
             following: 180,
             posts: 67,
@@ -610,6 +619,9 @@ export const databaseResolvers = {
             username: "jameschen",
             avatar: "/diverse-user-avatars.png",
             bio: "Tech entrepreneur and startup advisor",
+            location: null,
+            website: null,
+            email: null,
             followers: 3400,
             following: 420,
             posts: 89,
@@ -628,7 +640,7 @@ export const databaseResolvers = {
 
       return suggestedUsers.map((user: any) => ({
         ...user,
-        posts: user._count.authoredPosts,
+        posts: user._count?.authoredPosts || 0,
       }));
     },
   },
@@ -779,7 +791,7 @@ export const databaseResolvers = {
           media: mediaUrl
             ? {
                 create: {
-                  type: mediaType || "IMAGE",
+                  type: (mediaType as "IMAGE" | "VIDEO") || "IMAGE",
                   url: mediaUrl,
                 },
               }
@@ -803,9 +815,9 @@ export const databaseResolvers = {
 
       return {
         ...post,
-        likes: post._count.likes,
-        comments: post._count.comments,
-        shares: post._count.shares,
+        likes: post._count?.likes || 0,
+        comments: post._count?.comments || 0,
+        shares: post._count?.shares || 0,
         isLiked: false,
         isBookmarked: false,
       };
@@ -1263,6 +1275,13 @@ export const databaseResolvers = {
 
 // Check if we should use mock data (when Prisma is not available)
 const useMockData = !prisma;
+
+// Log the current configuration
+if (useMockData) {
+  console.warn("⚠️ Using mock data - Prisma client not available");
+} else {
+  console.log("✅ Using database resolvers with Prisma");
+}
 
 // Export the appropriate resolvers
 export const resolvers = useMockData ? mockResolvers : databaseResolvers;
